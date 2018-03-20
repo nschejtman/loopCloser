@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 
+using namespace std;
 using namespace cv;
 using namespace boost::filesystem;
 
