@@ -1,10 +1,11 @@
 #ifndef VOCABULARY_H_
 #define VOCABULARY_H_
 
-#include "/usr/local/include/opencv2/highgui/highgui.hpp"
-#include "/usr/local/include/opencv2/imgproc/imgproc.hpp"
-#include "/usr/local/include/opencv2/nonfree/features2d.hpp"
-#include "/usr/local/include/opencv2/flann/flann.hpp"
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/flann.hpp>
 
 #include <iostream>
 #include <sstream>
