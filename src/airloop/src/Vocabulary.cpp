@@ -25,9 +25,13 @@ unsigned long Vocabulary::extractFeatures_TS(const string &DetectorType, const s
 		path_temp = *names_iter;
 		Ptr<FeatureDetector> featureDetector;
 		if(DetectorType=="FAST" && (DescriptorType=="BRIEF"||DescriptorType=="BRIEF64"))
-			featureDetector = new cv::FastFeatureDetector(50);
+			featureDetector = cv::FastFeatureDetector::create(50);
+/**
+https://docs.opencv.org/trunk/db/dfa/tutorial_transition_guide.html
+
 		if(DetectorType!="FAST")
 			featureDetector = FeatureDetector::create(DetectorType);
+			**/
 		bool grayscale = true;
 		cv::Mat img_gray = grabImage(path_temp, grayscale);
 		if(img_gray.empty())
@@ -375,7 +379,7 @@ void Vocabulary::truncateVocabulary(const float upperLimit, const float lowerLim
 
 
 
-void Vocabulary::readFabMapDict(const string &tDictionary){	 
+void Vocabulary::readFabMapDict(const string &tDictionary){
 	try{
 		ifstream rdInvIndex(tDictionary.c_str());
 		if(!rdInvIndex) throw runtime_error("no file");
