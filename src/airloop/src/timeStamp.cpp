@@ -6,53 +6,50 @@
 using namespace std;
 using namespace ros;
 
-int main(int argc, char **argv)
-{
-	std_msgs::Time t;
-	ros::Time actualTime;
-	actualTime.useSystemTime();
-	if(argc < 2){
-		ROS_ERROR("Missing loop rate! Correct usage is ./timeStamp loopRate");
-		return -1;
-	}
-	int loopRate = atoi(argv[1]);
+int main(int argc, char **argv) {
+    std_msgs::Time t;
+    ros::Time actualTime;
+    actualTime.useSystemTime();
+    if (argc < 2) {
+        ROS_ERROR("Missing loop rate! Correct usage is ./timeStamp loopRate");
+        return -1;
+    }
+    int loopRate = atoi(argv[1]);
 
 
-	ofstream myfile;
-	myfile.open ("outData/param/timeStamp.txt",std::ofstream::app);
-	for (int i = 0; i< argc;i++)
-		myfile << argv[i]<<" ";
-	myfile<<"\n";
-	myfile.close();
+    ofstream myfile;
+    myfile.open("outData/param/timeStamp.txt", std::ofstream::app);
+    for (int i = 0; i < argc; i++)
+        myfile << argv[i] << " ";
+    myfile << "\n";
+    myfile.close();
 
-	ros::init(argc, argv, "timeStamp");
-	NodeHandle n;
-	Publisher ts_pub = n.advertise<std_msgs::Time>("/timeStamp", 1);
-	if(ts_pub){
-		Rate loop_rate(loopRate);
-		while(ts_pub.getNumSubscribers()<1 && ok())
-			ROS_INFO("Waiting for subscribers...");
+    ros::init(argc, argv, "timeStamp");
+    NodeHandle n;
+    Publisher ts_pub = n.advertise<std_msgs::Time>("/timeStamp", 1);
+    if (ts_pub) {
+        Rate loop_rate(loopRate);
+        while (ts_pub.getNumSubscribers() < 1 && ok())
+            ROS_INFO("Waiting for subscribers...");
 
-		ROS_INFO("Starting to publish timestamp...");
+        ROS_INFO("Starting to publish timestamp...");
 
-		while(ts_pub.getNumSubscribers()>0 && ros::ok()){
-			t.data = actualTime.now();
-			ts_pub.publish(t);
-			cout<<"new timestamp published"<<endl;
-			loop_rate.sleep();
-		}
-		if (ts_pub.getNumSubscribers()==0){
-			ROS_ERROR("No more subscriber! Quitting!");
-			return 0;
-		}
-		else if(!ok()){
-			ROS_ERROR("Error in ROS! Quitting!");
-			return -1;
-		}
-	}
-	else{
-		ROS_ERROR("Error in creating publisher!");
-		return -1;
-	}
-	return 0;
+        while (ts_pub.getNumSubscribers() > 0 && ros::ok()) {
+            t.data = actualTime.now();
+            ts_pub.publish(t);
+            cout << "new timestamp published" << endl;
+            loop_rate.sleep();
+        }
+        if (ts_pub.getNumSubscribers() == 0) {
+            ROS_ERROR("No more subscriber! Quitting!");
+            return 0;
+        } else if (!ok()) {
+            ROS_ERROR("Error in ROS! Quitting!");
+            return -1;
+        }
+    } else {
+        ROS_ERROR("Error in creating publisher!");
+        return -1;
+    }
+    return 0;
 }
