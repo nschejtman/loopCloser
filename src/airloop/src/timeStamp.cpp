@@ -6,6 +6,12 @@
 using namespace std;
 using namespace ros;
 
+/**
+ * This node publishes a timestamp to /timeStamp at a specified rate
+ * @param argc
+ * @param argv loopRate
+ * @return
+ */
 int main(int argc, char **argv) {
     std_msgs::Time t;
     ros::Time actualTime;

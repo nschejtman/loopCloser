@@ -1,18 +1,38 @@
 #include "Vocabulary.h"
 
+using namespace cv;
+
 bool comparator(const pair<int, int> &l, const pair<int, int> &r);
 
+/**
+ * Get all the images in the specified path matching the named extension and add copy them to the member variable
+ * ImgNames
+ *
+ * @param dir_path
+ * @param fileExtension
+ */
 void Vocabulary::acquireImgNames(const std::string &dir_path, const std::string &fileExtension) throw(std::string) {
+    // Check params
     if (!boost::filesystem::exists(dir_path) || !boost::filesystem::is_directory(dir_path) ||
         boost::filesystem::is_empty(dir_path))
         throw std::string("Non existing or empty dataset directory!");
+
+    // Find all images in dir
     imgDirectory = dir_path;
-    vector <string> names = listFilesInDirectory(dir_path, fileExtension);
+    vector <std::string> names = listFilesInDirectory(dir_path, fileExtension);
     if (names.size() == 0)
         throw std::string("No image found in directory!");
-    copy(names.begin(), names.end(), back_inserter(ImgNames));
+
+    // Copy image names the range [names.begin(), names.end()) into ImgNames (in reverse order?)
+    std::copy(names.begin(), names.end(), std::back_inserter(this->ImgNames));
 }
 
+/**
+ *
+ * @param DetectorType
+ * @param descriptor_type
+ * @return
+ */
 unsigned long
 Vocabulary::extractFeatures_TS(const string &DetectorType, const string &DescriptorType) throw(std::runtime_error) {
     FeatureDetectorType = DetectorType;
@@ -63,8 +83,8 @@ Vocabulary::extractFeatures_TS(const string &DetectorType, const string &Descrip
     return n_of_features;
 }
 
-unsigned long Vocabulary::describeFeatures_TS(const string &DescriptorType) throw(std::runtime_error) {
-    DescriptorExtractorType = DescriptorType;
+unsigned long Vocabulary::describeFeatures_TS(const string &descriptor_type) throw(std::runtime_error) {
+    DescriptorExtractorType = descriptor_type;
     string path_temp;
     size_t img_count = 0;
     string d_base(outputFolder + descr_folder + "/"), d_extension(".descr");
@@ -155,29 +175,6 @@ Vocabulary::clusterDescriptors(const string &method, const int &number_cluster) 
         clCenters.~Mat();
     }
     GreatMatrix.~Mat();
-    /*string vocabSavePath(outputFolder+outdata+"vocabulary.out");
-
-    ofstream print_to_file;
-    print_to_file.open(vocabSavePath.c_str());
-    if (!print_to_file) {
-        throw runtime_error("Unable to open output file: "+vocabSavePath);
-    }
-    print_to_file<<"DETECTOR_TYPE: "<<FeatureDetectorType<<endl;
-    print_to_file<<"DESCRIPTOR_TYPE: "<<DescriptorExtractorType<<endl;
-    print_to_file<<"WORDS: "<<ClusterCenters.rows<<endl;
-    print_to_file<<"DESCRIPTOR_DIMENSION: "<<dataDimension<<endl;
-    print_to_file<<"WORD:0 "<<endl;
-    int new_line =0;
-    cv::MatConstIterator_<float> iter_mat = ClusterCenters.begin<float>(),iter_mat_fal=ClusterCenters.end<float>();
-    for (;iter_mat!=iter_mat_fal;++iter_mat){
-        if (new_line!=0 && new_line%ClusterCenters.cols == 0) {
-            print_to_file<<"\n"<<flush;
-            print_to_file<<"WORD:"<<new_line/ClusterCenters.cols<<endl;
-        }
-        print_to_file<<*iter_mat<<" "<<flush;
-        ++new_line;
-    }
-    print_to_file.close();*/
     saveVocab(ClusterCenters, outputFolder + outdata + "vocabulary.out");
     return ClusterCenters.rows;
 }
@@ -321,6 +318,11 @@ void Vocabulary::buildAllIndeces(const string &Index_path, const string &InvInde
     return;
 }
 
+/**
+ * This function gets the most frequent words ranging from upperLimit percentile to lowerLimit percentile
+ * @param upperLimit
+ * @param lowerLimit
+ */
 void Vocabulary::truncateVocabulary(const float upperLimit, const float lowerLimit) throw(runtime_error) {
     cout << "vocabulary truncation started" << endl;
     if (vw_occurrence_n.size() == 0)
@@ -343,11 +345,10 @@ void Vocabulary::truncateVocabulary(const float upperLimit, const float lowerLim
     }
     cout << "Copying data from old vocabulary .... " << endl;
     cv::Mat newVocab(vw_times_seen_vect.size(), dataDimension, CV_32FC1);
-    deque < pair < int, int > > ::const_iterator
-    deq_trunc = vw_times_seen_vect.begin(),
-            deq_trunc_fal = vw_times_seen_vect.end();
+    deque <pair<int, int>>::const_iterator deq_trunc = vw_times_seen_vect.begin(), deq_trunc_fal = vw_times_seen_vect.end();
     cv::MatIterator_<float> new_it = newVocab.begin<float>(), new_it_fal = newVocab.end<float>();
     cv::MatIterator_<float> old_begin = ClusterCenters.begin<float>(), old_temp = ClusterCenters.begin<float>();
+    // TODO what is this for doing???
     for (; deq_trunc != deq_trunc_fal; ++deq_trunc) {
         old_temp = old_begin + (deq_trunc->first) * dataDimension;
         for (unsigned i = 0; i != dataDimension; ++i) {
@@ -356,28 +357,6 @@ void Vocabulary::truncateVocabulary(const float upperLimit, const float lowerLim
             ++old_temp;
         }
     }
-    /*String vocabSavePath(outputFolder+outdata+"vocabulary.out");
-    ofstream print_to_file;
-    print_to_file.open(vocabSavePath.c_str());
-    if (!print_to_file) {
-        cerr <<"error: unable to open output file: "<<vocabSavePath<<endl;
-    }
-    print_to_file<<"DETECTOR_TYPE: "<<FeatureDetectorType<<endl;
-    print_to_file<<"DESCRIPTOR_TYPE: "<<DescriptorExtractorType<<endl;
-    print_to_file<<"WORDS: "<<newVocab.rows<<endl;
-    print_to_file<<"DESCRIPTOR_DIMENSION: "<<dataDimension<<endl;
-    print_to_file<<"WORD:0 "<<endl;
-    int new_line =0;
-    cv::MatConstIterator_<float> iter_mat = newVocab.begin<float>(),iter_mat_fal=newVocab.end<float>();
-    for (;iter_mat!=iter_mat_fal;++iter_mat){
-        if (new_line!=0 && new_line%newVocab.cols == 0) {
-            print_to_file<<"\n"<<flush;
-            print_to_file<<"WORD:"<<new_line/newVocab.cols<<endl;
-        }
-        print_to_file<<*iter_mat<<" "<<flush;
-        ++new_line;
-    }
-    print_to_file.close();*/
     saveVocab(newVocab, outputFolder + outdata + "vocabulary.out");
     newVocab.~Mat();
 }
@@ -544,7 +523,14 @@ vector<int> Vocabulary::getSowBowRepr_img(const cv::Mat &current_picture,
     }
 }
 
-void Vocabulary::generateFolders(const string &kp_folder, const string &desc_folder, const string &outdata) const {
+/**
+ *
+ * @param keypoints_folder
+ * @param desc_folder
+ * @param outdata
+ */
+void
+Vocabulary::generateFolders(const string &keypoints_folder, const string &desc_folder, const string &outdata) const {
     if (!boost::filesystem::exists(outputFolder))
         boost::filesystem::create_directory(outputFolder);
     if (!boost::filesystem::exists(outputFolder + kp_folder))

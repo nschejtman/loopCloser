@@ -13,6 +13,12 @@ void newTs(const std_msgs::Time time) {
     ts = time.data;
 }
 
+/**
+ * This node receives timestamps from /timeStamp and publishes random odometry data to /odom
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, char **argv) {
     srand(time(NULL));
     int loopRate = 10;

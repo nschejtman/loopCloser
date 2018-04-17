@@ -31,13 +31,16 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * This is a utility class used for generating a vocabulary (BoW approach) in generateVocab.cpp
+ */
 class Vocabulary {
 public:
     explicit Vocabulary(std::string base_inp = "Images") :
             imgDirectory(base_inp), TotalImagesNumber(0),
             TotalDescriptorNumber(0), dataDimension(0) {
         outputFolder = "outData/";
-        kp_folder = "KeyPoints";
+        keypoints_folder = "KeyPoints";
         descr_folder = "Descriptors";
         outdata = "GenData/";
     }
@@ -45,7 +48,7 @@ public:
     void acquireImgNames(const std::string &dir_path, const std::string &fileExtension) throw(std::string);
 
     unsigned long
-    extractFeatures_TS(const std::string &DetectorType, const std::string &DescriptorType) throw(std::runtime_error);
+    extractFeatures_TS(const std::string &detector_type, const std::string &descriptor_type) throw(std::runtime_error);
 
     unsigned long describeFeatures_TS(const std::string &DescriptorType)  throw(std::runtime_error);
 
@@ -86,7 +89,7 @@ private:
     cv::Mat grabImage(const string &path, const int &grayscale) const;
 
     inline void
-    generateFolders(const std::string &kp_folder, const std::string &descr_folder, const std::string &outdata) const;
+    generateFolders(const std::string &keypoints_folder, const std::string &descr_folder, const std::string &outdata) const;
 
     std::vector<int>
     getFlannSowBowVector(flann::GenericIndex <cvflann::L2<float>> &flannIndex, Mat &descr_query, Mat &indices,
@@ -98,7 +101,7 @@ private:
     cv::Mat
     describeImgBriefFeatures(const cv::Mat &img_gray, std::vector <cv::KeyPoint> &key_points, const int bits_n) const;
 
-    std::map<int, int> vw_occurrence_n;
+    std::map<int, int> vw_occurrence_n; // For each word stores it's frequency??
     std::map<int, std::map<int, int> > sowIndex;
     std::map<int, std::vector<int> > sowInvertIndex;
 
@@ -119,7 +122,7 @@ private:
 
     std::vector <std::string> ImgNames;
     std::string outputFolder;
-    std::string kp_folder;
+    std::string keypoints_folder;
     std::string descr_folder;
     std::string outdata;
 };

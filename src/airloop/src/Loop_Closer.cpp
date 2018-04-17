@@ -20,7 +20,7 @@ Loop_Closer::recalcNewInvIndex(vector<int>::iterator curImgBow_beg, vector<int>:
                                int img_number) const {
     map<int, vector<int> > localInvIndex(newInvIndex);
     pair<int, vector<int> > inv_ind_pair;
-    pair < map < int, vector < int > > ::iterator, bool > inv_ind_write;
+    pair <map<int, vector<int>>::iterator, bool> inv_ind_write;
     int iteration_n = 0;
     for (; curImgBow_beg != curImgBow_end; ++curImgBow_beg) {
         if (*curImgBow_beg) {

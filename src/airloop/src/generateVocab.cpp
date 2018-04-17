@@ -9,6 +9,7 @@ int main(int argc, char **argv) {
     int numberOfWords;
     unsigned long featuresNumber, descriptorNumber, clusterNumber;
 
+    // Check for correct arguments
     if (argc != 10 && argc != 8) {
         ROS_ERROR("Improper use of function parameters!");
         ROS_ERROR(
@@ -16,7 +17,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-
+    // Read arguments
     detectorType = argv[1];
     descriptorTpye = argv[2];
     clusteringMethod = argv[3];
@@ -28,6 +29,8 @@ int main(int argc, char **argv) {
         truncateFirst = atof(argv[8]);
         truncateLast = atof(argv[9]);
     }
+
+    // Document
     ofstream myfile;
     myfile.open("outData/param/generateVocab.txt");
     myfile << argv[0] << " " << detectorType << " " << descriptorTpye << " " << clusteringMethod << " "
@@ -35,35 +38,42 @@ int main(int argc, char **argv) {
            << truncateFirst << " " << truncateLast;
     myfile.close();
 
+    // Create vocabulary
     Vocabulary VocabSet;
+
     try {
         VocabSet.acquireImgNames(datasetDirectory, fileExtension);
     } catch (std::string &e) {
         ROS_ERROR("%s", e.c_str());
         return -1;
     }
-    try {
+
+
+    try { // Try first extracting features
         featuresNumber = VocabSet.extractFeatures_TS(detectorType, descriptorTpye);
     } catch (std::runtime_error &e) {
         ROS_ERROR("%s", e.what());
         return -1;
     }
-    if (featuresNumber != 0) {
-        try {
+
+    if (featuresNumber != 0) { // If some features where extracted
+        try { // try describing them
             descriptorNumber = VocabSet.describeFeatures_TS(descriptorTpye);
         } catch (std::runtime_error &e) {
             ROS_ERROR("%s", e.what());
             return -1;
         }
-        if (descriptorNumber != 0) {
-            try {
+
+        if (descriptorNumber != 0) { // If descriptors were generated
+            try { // try clustering them
                 clusterNumber = VocabSet.clusterDescriptors(clusteringMethod, numberOfWords);
             } catch (std::runtime_error &e) {
                 ROS_ERROR("%s", e.what());
                 return -1;
             }
-            if (clusterNumber != 0) {
-                if (truncate) {
+
+            if (clusterNumber != 0) { // If clusters were generated
+                if (truncate) { //
                     try {
                         VocabSet.buildAllIndeces("general_index.ind", "general_inverted_index.ind");
                         VocabSet.truncateVocabulary(truncateFirst, truncateLast);

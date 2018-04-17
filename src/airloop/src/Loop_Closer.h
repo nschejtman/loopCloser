@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <numeric>
 
+/**
+ * Utility class for calculating loop closures.
+ */
 class Loop_Closer {
 
 public:

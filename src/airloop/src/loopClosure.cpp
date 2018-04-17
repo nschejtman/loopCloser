@@ -37,7 +37,12 @@ void odomProcessing(const sensor_msgs::Imu msg) {
     odom << msg.linear_acceleration.x << ":" << msg.linear_acceleration.y << ":" << msg.linear_acceleration.z << " ";
 }
 
-
+/**
+ * This function gets called each time an image is published in /images. It is responsible for calculating the loop
+ * closure probabilities
+ * @param msg
+ * @param flannIndObj
+ */
 void imageProcessing(const sensor_msgs::ImageConstPtr &msg, flann::GenericIndex <cv::flann::L2<float>> &flannIndObj) {
     std::vector <std::vector<float>> lc;
     std_msgs::Int32MultiArray imgs;
@@ -128,6 +133,7 @@ int main(int argc, char **argv) {
     GEOM_THRESH = defaultGeomThreshold;
     LOADDB = defaultLoadDB;
 
+    // Parse arguments
     int ch;
     int option_index;
     struct option longopts[] = {
@@ -229,6 +235,7 @@ int main(int argc, char **argv) {
 
     cv::Mat Vocabulary = VocabSet.takeDictionary();
 
+    // FLANN: Fast Library for Approximate Nearest Neighbors
     cvflann::KMeansIndexParams flannIndexParams(32, 11, cvflann::FLANN_CENTERS_RANDOM, 0.2);
     flann::GenericIndex <cv::flann::L2<float>> FlannObj(Vocabulary, (cvflann::AutotunedIndexParams &) flannIndexParams);
     ROS_INFO("Flann Index successfully generated");
@@ -251,6 +258,8 @@ int main(int argc, char **argv) {
 
 
     ROS_INFO("Init loopClosure node...");
+
+    // Document
     ofstream myfile;
     myfile.open("outData/param/loopClosure.txt", std::ofstream::app);
     for (int i = 0; i < argc; i++)
@@ -258,9 +267,8 @@ int main(int argc, char **argv) {
     myfile << "\n";
     myfile.close();
 
+    // Init ROS node
     ros::init(argc, argv, "loopClosure");
-
-
     ros::NodeHandle n;
     ros::Rate loop_rate(100);
     ros::Subscriber odom_sub = n.subscribe<sensor_msgs::Imu>("/odom", 100, odomProcessing);
